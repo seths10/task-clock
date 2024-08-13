@@ -1,113 +1,236 @@
-import Image from "next/image";
+"use client";
+
+import { useEffect, useState } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { toast as sonner } from "sonner";
+import { AlarmClockPlus } from "lucide-react";
+import Navbar from "@/components/navbar/navbar";
+import dynamic from "next/dynamic";
+
+const Clock = dynamic(() => import("@/components/model/Clock"), { ssr: false });
+
+interface Task {
+  text: string;
+  startTime: Date;
+  endTime: Date;
+  color: string;
+}
+
+const FormSchema = z.object({
+  task: z.string().min(2, {
+    message: "Task must be at least 2 characters.",
+  }),
+  startTime: z.string(),
+  endTime: z.string(),
+  color: z.string().regex(/^#[0-9A-Fa-f]{6}$/, {
+    message: "Invalid color format. Use #RRGGBB",
+  }),
+});
 
 export default function Home() {
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [isFormVisible, setIsFormVisible] = useState(false);
+
+  const form = useForm<z.infer<typeof FormSchema>>({
+    resolver: zodResolver(FormSchema),
+    defaultValues: {
+      task: "",
+      startTime: "",
+      endTime: "",
+    },
+  });
+
+  useEffect(() => {
+    const storedTasks = localStorage.getItem("tasks");
+    if (storedTasks) {
+      try {
+        const parsedTasks = JSON.parse(storedTasks);
+        const validatedTasks = parsedTasks.map((task: any) => ({
+          ...task,
+          startTime: new Date(task.startTime),
+          endTime: new Date(task.endTime),
+        }));
+
+        setTasks(validatedTasks);
+      } catch (error) {
+        sonner.error("Failed to parse tasks from local storage");
+      }
+    }
+  }, []);
+
+  function onSubmit(data: z.infer<typeof FormSchema>) {
+    const parseTime = (timeString: string) => {
+      const [hours, minutes] = timeString.split(":").map(Number);
+      return new Date(new Date().setHours(hours, minutes, 0, 0));
+    };
+
+    const opacityHex = "E6";
+
+    const newTask: Task = {
+      text: data.task,
+      startTime: parseTime(data.startTime),
+      endTime: parseTime(data.endTime),
+      color: `${data.color}${opacityHex}`,
+    };
+
+    setTasks([...tasks, newTask]);
+    localStorage.setItem("tasks", JSON.stringify([...tasks, newTask]));
+
+    sonner.info(
+      `'${data.task}' scheduled from ${data.startTime} to ${data.endTime}`,
+      {
+        duration: 5000,
+      }
+    );
+
+    form.reset();
+  }
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">app/page.tsx</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:size-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
+    <div className="w-screen h-screen bg-[#151515] relative overflow-hidden">
+      <Navbar />
+      <div className="flex justify-center items-center pt-[5rem] w-full h-full">
+        <Clock tasks={tasks} size={600} />
+      </div>
+
+      <div className="absolute bottom-5 right-10 overflow-hidden">
+        <div
+          className={`transition-all duration-300 transform ${
+            isFormVisible
+              ? "opacity-100 translate-y-0"
+              : "opacity-0 translate-y-4 pointer-events-none"
+          }`}
+        >
+          <div className="p-6 w-[24rem] rounded-2xl backdrop-blur-md bg-white/10 shadow-lg">
+            <div className="text-white/80 hover:text-white cursor-pointer transition-colors duration-200">
+              <p
+                onClick={() => setIsFormVisible(!isFormVisible)}
+                className="underline text-right text-xs"
+              >
+                Hide
+              </p>
+            </div>
+            <Form {...form}>
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="w-full space-y-4"
+              >
+                <FormField
+                  control={form.control}
+                  name="task"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-white/80">Task</FormLabel>
+                      <FormControl>
+                        <Input
+                          className="w-full bg-white/10 border-white/20 text-white placeholder-white/50 focus:border-white/50 transition-colors duration-200"
+                          required
+                          placeholder="Enter a new task"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage className="text-red-300" />
+                    </FormItem>
+                  )}
+                />
+                <div className="flex space-x-4">
+                  <FormField
+                    control={form.control}
+                    name="startTime"
+                    render={({ field }) => (
+                      <FormItem className="w-1/2">
+                        <FormLabel className="text-white/80">
+                          Start Time
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            required
+                            type="time"
+                            className="bg-white/10 border-white/20 text-white focus:border-white/50 transition-colors duration-200"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage className="text-red-300" />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="endTime"
+                    render={({ field }) => (
+                      <FormItem className="w-1/2">
+                        <FormLabel className="text-white/80">
+                          End Time
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            required
+                            type="time"
+                            className="bg-white/10 border-white/20 text-white focus:border-white/50 transition-colors duration-200"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage className="text-red-300" />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                <FormField
+                  control={form.control}
+                  name="color"
+                  render={({ field }) => (
+                    <FormItem className="w-full">
+                      <FormLabel className="text-white/80">Color</FormLabel>
+                      <FormControl>
+                        <Input
+                          required
+                          type="color"
+                          {...field}
+                          className="h-10 cursor-pointer bg-transparent border-white/20 rounded-md overflow-hidden"
+                        />
+                      </FormControl>
+                      <FormMessage className="text-red-300" />
+                    </FormItem>
+                  )}
+                />
+                <Button
+                  type="submit"
+                  className="w-full bg-white/20 hover:bg-white/30 text-white transition-colors duration-200"
+                >
+                  Add Task
+                </Button>
+                <p
+                  className="text-center text-xs cursor-pointer text-white underline"
+                  onClick={() => localStorage.clear()}
+                >
+                  Clear Tasks
+                </p>
+              </form>
+            </Form>
+          </div>
         </div>
+
+        {!isFormVisible && (
+          <Button
+            className="flex float-right justify-center items-center bg-white/10 hover:bg-white/20 text-white transition-colors duration-200"
+            onClick={() => setIsFormVisible(!isFormVisible)}
+          >
+            <AlarmClockPlus size={20} />
+          </Button>
+        )}
       </div>
-
-      <div className="relative z-[-1] flex place-items-center before:absolute before:h-[300px] before:w-full before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-full after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 sm:before:w-[480px] sm:after:w-[240px] before:lg:h-[360px]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className="mb-32 grid text-center lg:mb-0 lg:w-full lg:max-w-5xl lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Docs{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Learn{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Templates{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Explore starter templates for Next.js.
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Deploy{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-balance text-sm opacity-50">
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
+    </div>
   );
 }
