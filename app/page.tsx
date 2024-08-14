@@ -15,13 +15,12 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { toast as sonner } from "sonner";
-import { AlarmClockPlus, Info } from "lucide-react";
+import { AlarmClockPlus, Info, MoveUpRight } from "lucide-react";
 import { AddTaskFormSchema } from "@/schema/schema";
 import { Task } from "@/types";
+import { get12HourTimeFrom24HourTime } from "@/lib/utils";
+import Clock  from "@/components/model/clock";
 import Navbar from "@/components/navbar/navbar";
-import dynamic from "next/dynamic";
-
-const Clock = dynamic(() => import("@/components/model/clock"), { ssr: false });
 
 export default function Home() {
   const [tasks, setTasks] = React.useState<Task[]>([]);
@@ -78,7 +77,9 @@ export default function Home() {
     localStorage.setItem("tasks", JSON.stringify([...tasks, newTask]));
 
     sonner.message("Task Added", {
-      description: `'${data.task}' scheduled from ${data.startTime} to ${data.endTime}`,
+      description: `'${data.task}' scheduled from ${get12HourTimeFrom24HourTime(
+        data.startTime
+      )} to ${get12HourTimeFrom24HourTime(data.endTime)}`,
       duration: 5000,
     });
 
@@ -94,12 +95,18 @@ export default function Home() {
 
       <div className="absolute bottom-5 right-10 overflow-hidden">
         <div
-          className={`transition-all duration-300 transform ${
-            isFormVisible
-              ? "opacity-100 translate-y-0"
-              : "opacity-0 translate-y-4 pointer-events-none"
+          // className={`transition-all duration-300 transform ${
+          //   isFormVisible
+          //     ? "opacity-100 translate-y-0"
+          //     : "opacity-0 translate-y-4 pointer-events-none"
+          // }`}
+
+          className={`transition-all duration-300 ease-in-out ${
+            isFormVisible ? "opacity-100 scale-100" : "opacity-0 scale-95 pointer-events-none"
           }`}
         >
+              {isFormVisible && (
+
           <div className="p-6 w-[24rem] rounded-2xl backdrop-blur-md bg-white/10 shadow-lg">
             <div className="text-white/80 hover:text-white cursor-pointer transition-colors duration-200">
               <p
@@ -198,20 +205,15 @@ export default function Home() {
                 >
                   Add Task
                 </Button>
-                <p
-                  className="text-center text-xs cursor-pointer text-white underline"
-                  onClick={() => localStorage.clear()}
-                >
-                  Clear Tasks
-                </p>
               </form>
             </Form>
           </div>
+              )}
         </div>
 
         {!isFormVisible && (
           <Button
-            className="flex py-6 shadow-lg rounded-3xl float-right justify-center items-center bg-white/10 hover:bg-white/20 text-white transition-colors duration-200"
+            className="flex z-[100] py-6 shadow-lg rounded-3xl float-right justify-center items-center bg-white/10 hover:bg-white/20 text-white transition-colors duration-200"
             onClick={() => setIsFormVisible(!isFormVisible)}
           >
             <AlarmClockPlus size={20} />
@@ -219,19 +221,27 @@ export default function Home() {
         )}
       </div>
 
-      <div className="flex items-center gap-2 absolute bottom-5 left-10 overflow-hidden">
+      <div className="flex items-center gap-2 absolute bottom-5 left-5 overflow-hidden">
         <Info size={20} className="text-white" />
-        <p className="text-xs text-white/80">
-          Made with ❤️ by{" "}
-          <a
-            className="underline"
-            href="https://github.com/seths10"
-            target="_blank"
-            rel="noreferrer"
-          >
-            Seths 10
-          </a>
-        </p>
+        <div className="flex flex-col gap-1">
+          <p className="text-xs text-white/80 flex items-center">
+            Press and hold on a task to delete it.
+          </p>
+          <p className="flex gap-1 items-center text-xs text-white/80">
+            Made with ❤️ by{" "}
+            <a
+              className="underline"
+              href="https://github.com/seths10"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Seth Addo
+            </a>
+            <span>
+              {<MoveUpRight size={14} className="text-white underline" />}
+            </span>
+          </p>
+        </div>
       </div>
     </div>
   );

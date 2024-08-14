@@ -22,3 +22,9 @@ export const getMonthFromIndex = (index: number) => {
   return months[index];
 };
 
+export const get12HourTimeFrom24HourTime = (time: string) => {
+  const [hours, minutes] = time.split(":").map(Number);
+  const period = hours >= 12 ? "PM" : "AM";
+  const twelveHour = hours % 12 || 12;
+  return `${twelveHour}:${minutes} ${period}`;
+};

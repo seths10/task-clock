@@ -9,8 +9,11 @@ const Clock: React.FC<ClockProps> = ({ tasks, size, onDeleteTask }) => {
     x: number;
     y: number;
   } | null>(null);
+  const [isDeleting, setIsDeleting] = React.useState(false);
+  const [deleteProgress, setDeleteProgress] = React.useState(0);
 
   const pressTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+  const progressIntervalRef = React.useRef<NodeJS.Timeout | null>(null);
 
   React.useEffect(() => {
     const timer = setInterval(() => {
@@ -20,15 +23,32 @@ const Clock: React.FC<ClockProps> = ({ tasks, size, onDeleteTask }) => {
     return () => clearInterval(timer);
   }, []);
 
-  const handleMouseDown = (task: Task) => {
+  const handleMouseDown = (
+    task: Task,
+    e: React.MouseEvent<SVGPathElement, MouseEvent>
+  ) => {
+    setHoverPosition({ x: e.clientX, y: e.clientY });
+    setIsDeleting(true);
+    setDeleteProgress(0);
+
+    progressIntervalRef.current = setInterval(() => {
+      setDeleteProgress((prev) => Math.min(prev + 1, 100));
+    }, 30);
+
     pressTimeoutRef.current = setTimeout(() => {
+      clearInterval(progressIntervalRef.current!);
+      setDeleteProgress(100);
       onDeleteTask(task);
+      setIsDeleting(false);
     }, 3000);
   };
 
   const handleMouseUp = () => {
     if (pressTimeoutRef.current) {
       clearTimeout(pressTimeoutRef.current);
+      setIsDeleting(false);
+      setDeleteProgress(0);
+      clearInterval(progressIntervalRef.current!);
     }
   };
 
@@ -138,7 +158,7 @@ const Clock: React.FC<ClockProps> = ({ tasks, size, onDeleteTask }) => {
               setHoveredTask(null);
               setHoverPosition(null);
             }}
-            onMouseDown={() => handleMouseDown(task)}
+            onMouseDown={(e) => handleMouseDown(task, e)}
             onMouseUp={handleMouseUp}
           />
         );
@@ -163,9 +183,49 @@ const Clock: React.FC<ClockProps> = ({ tasks, size, onDeleteTask }) => {
             exit={{ opacity: 0, scale: 0.8 }}
             transition={{ duration: 0.2 }}
           >
+            {isDeleting && (
+              <g>
+                {(() => {
+                  const startAngle = getAngle(hoveredTask.startTime);
+                  const start = getCoordinatesForAngle(
+                    startAngle,
+                    size / 2 - 20
+                  );
+
+                  return (
+                    <>
+                      <circle
+                        cx={start.x - 75}
+                        cy={start.y }
+                        r="25"
+                        stroke="white"
+                        strokeWidth="4"
+                        fill="none"
+                        strokeDasharray={Math.PI * 50}
+                        strokeDashoffset={
+                          ((100 - deleteProgress) / 100) * Math.PI * 50
+                        }
+                      />
+                      <text
+                        x={start.x - 75}
+                        y={start.y}
+                        textAnchor="middle"
+                        dominantBaseline="middle"
+                        fill="white"
+                        fontSize="10"
+                      >
+                        Deleting
+                      </text>
+                    </>
+                  );
+                })()}
+              </g>
+            )}
             {(() => {
-              const rectWidth = 180;
-              const rectHeight = 60;
+              const rectWidth = 200;
+              const rectHeight = 100;
+              const barWidth = 4;
+              const barHeight = 20;
 
               return (
                 <>
@@ -175,31 +235,85 @@ const Clock: React.FC<ClockProps> = ({ tasks, size, onDeleteTask }) => {
                     width={rectWidth}
                     height={rectHeight}
                     fill="#222"
-                    stroke="#888"
-                    rx="8"
-                    ry="8"
+                    stroke="#444"
+                    strokeWidth="1"
+                    rx="10"
+                    ry="10"
                   />
+
                   <text
                     x={size / 2}
                     y={size / 2 - rectHeight / 2 + 20}
                     textAnchor="middle"
                     dominantBaseline="middle"
                     fill="#fff"
-                    fontSize="14"
+                    fontSize="16"
                   >
                     {hoveredTask.text}
                   </text>
+
+                  <rect
+                    x={size / 2 - rectWidth / 2 + 10}
+                    y={size / 2 + 5}
+                    width={barWidth}
+                    height={barHeight}
+                    fill={hoveredTask.color}
+                    rx={barWidth / 2}
+                    ry={barWidth / 2}
+                  />
+
                   <text
-                    x={size / 2}
-                    y={size / 2 - rectHeight / 2 + 50}
-                    textAnchor="middle"
+                    x={size / 2 - rectWidth / 2 + 20}
+                    y={size / 2 + 25}
+                    textAnchor="start"
                     dominantBaseline="middle"
                     fill="#ccc"
-                    fontSize="12"
+                    fontSize="14"
                   >
-                    {`${formatTime(hoveredTask.startTime)} - ${formatTime(
-                      hoveredTask.endTime
-                    )}`}
+                    {formatTime(hoveredTask.startTime)}
+                  </text>
+
+                  <text
+                    x={size / 2 - rectWidth / 2 + 20}
+                    y={size / 2 + 5}
+                    textAnchor="start"
+                    dominantBaseline="middle"
+                    fill="#ccc"
+                    fontSize="10"
+                  >
+                    Start Time
+                  </text>
+
+                  <rect
+                    x={size / 2 + rectWidth / 2 - 10 - barWidth}
+                    y={size / 2 + 5}
+                    width={barWidth}
+                    height={barHeight}
+                    fill={hoveredTask.color}
+                    rx={barWidth / 2}
+                    ry={barWidth / 2}
+                  />
+
+                  <text
+                    x={size / 2 + rectWidth / 2 - 20}
+                    y={size / 2 + 25}
+                    textAnchor="end"
+                    dominantBaseline="middle"
+                    fill="#ccc"
+                    fontSize="14"
+                  >
+                    {formatTime(hoveredTask.endTime)}
+                  </text>
+
+                  <text
+                    x={size / 2 + rectWidth / 2 - 20}
+                    y={size / 2 + 5}
+                    textAnchor="end"
+                    dominantBaseline="middle"
+                    fill="#ccc"
+                    fontSize="10"
+                  >
+                    End Time
                   </text>
                 </>
               );
