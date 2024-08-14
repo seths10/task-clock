@@ -19,7 +19,7 @@ import { AlarmClockPlus, Info, MoveUpRight } from "lucide-react";
 import { AddTaskFormSchema } from "@/schema/schema";
 import { Task } from "@/types";
 import { get12HourTimeFrom24HourTime } from "@/lib/utils";
-import Clock from "@/components/model/clock";
+import Clock from "@/components/model/Clock";
 import Navbar from "@/components/navbar/navbar";
 
 export default function Home() {
