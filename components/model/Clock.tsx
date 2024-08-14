@@ -1,29 +1,18 @@
-import React, { useEffect, useState } from "react";
+import * as React from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Task, ClockProps } from "@/types";
 
-interface Task {
-  text: string;
-  startTime: Date;
-  endTime: Date;
-  color: string;
-}
-
-interface ClockProps {
-  tasks: Task[];
-  size: number;
-}
-
-const Clock: React.FC<ClockProps> = ({ tasks, size }) => {
-  const [currentTime, setCurrentTime] = useState(new Date());
-  const [hoveredTask, setHoveredTask] = useState<Task | null>(null);
-  const [hoverPosition, setHoverPosition] = useState<{
+const Clock: React.FC<ClockProps> = ({ tasks, size, onDeleteTask }) => {
+  const [currentTime, setCurrentTime] = React.useState(new Date());
+  const [hoveredTask, setHoveredTask] = React.useState<Task | null>(null);
+  const [hoverPosition, setHoverPosition] = React.useState<{
     x: number;
     y: number;
   } | null>(null);
-  const [hoverDirection, setHoverDirection] = useState<
-    "left" | "right" | "top" | "bottom"
-  >("right");
 
-  useEffect(() => {
+  const pressTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+
+  React.useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTime(new Date());
     }, 1000);
@@ -31,16 +20,26 @@ const Clock: React.FC<ClockProps> = ({ tasks, size }) => {
     return () => clearInterval(timer);
   }, []);
 
+  const handleMouseDown = (task: Task) => {
+    pressTimeoutRef.current = setTimeout(() => {
+      onDeleteTask(task);
+    }, 3000);
+  };
+
+  const handleMouseUp = () => {
+    if (pressTimeoutRef.current) {
+      clearTimeout(pressTimeoutRef.current);
+    }
+  };
+
   const getAngle = (time: Date) => {
     const hours = time.getHours();
     const minutes = time.getMinutes();
     return ((hours + minutes / 60) / 24) * 360;
   };
 
-  const getHoverDirection = (angle: number) => {
-    if (angle > 45 && angle <= 135) return "top";
-    if (angle > 225 && angle <= 315) return "bottom";
-    return angle > 90 && angle < 270 ? "left" : "right";
+  const formatTime = (date: Date) => {
+    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   };
 
   const getCoordinatesForAngle = (angle: number, radius: number) => {
@@ -108,43 +107,39 @@ const Clock: React.FC<ClockProps> = ({ tasks, size }) => {
       {tasks.map((task, index) => {
         const startAngle = getAngle(task.startTime);
         const endAngle = getAngle(task.endTime);
-        const midAngle = (startAngle + endAngle) / 2;
         const radius = size / 2 - 20;
         const largeArcFlag = endAngle - startAngle <= 180 ? 0 : 1;
 
         const start = getCoordinatesForAngle(startAngle, radius);
         const end = getCoordinatesForAngle(endAngle, radius);
-        const middle = getCoordinatesForAngle(midAngle, radius);
 
-        const outerStart = getCoordinatesForAngle(startAngle, radius + 10);
-        const outerEnd = getCoordinatesForAngle(endAngle, radius + 10);
+        const isHovered = hoveredTask === task;
 
         const d = [
           `M ${start.x} ${start.y}`,
           `A ${radius} ${radius} 0 ${largeArcFlag} 1 ${end.x} ${end.y}`,
-          `L ${outerEnd.x} ${outerEnd.y}`,
-          `A ${radius + 10} ${radius + 10} 0 ${largeArcFlag} 0 ${
-            outerStart.x
-          } ${outerStart.y}`,
-          `Z`,
         ].join(" ");
 
         return (
-          <path
+          <motion.path
             key={index}
             d={d}
-            fill={task.color}
+            fill="none"
+            cursor={isHovered ? "pointer" : "default"}
+            stroke={task.color}
+            initial={{ strokeWidth: 10 }}
+            animate={{ strokeWidth: isHovered ? 12 : 10 }}
+            transition={{ duration: 0.2 }}
             onMouseEnter={() => {
               setHoveredTask(task);
-              setHoverPosition(middle);
-              setHoverDirection(
-                midAngle > 90 && midAngle < 270 ? "left" : "right"
-              );
+              setHoverPosition({ x: size / 2, y: size / 2 });
             }}
             onMouseLeave={() => {
               setHoveredTask(null);
               setHoverPosition(null);
             }}
+            onMouseDown={() => handleMouseDown(task)}
+            onMouseUp={handleMouseUp}
           />
         );
       })}
@@ -154,80 +149,64 @@ const Clock: React.FC<ClockProps> = ({ tasks, size }) => {
         y1={size / 2}
         x2={getCoordinatesForAngle(currentAngle, size / 2 - 30).x}
         y2={getCoordinatesForAngle(currentAngle, size / 2 - 30).y}
-        stroke="white"
+        stroke="teal"
         strokeWidth="0.5"
       />
 
       <circle cx={size / 2} cy={size / 2} r="0.25" fill="white" />
 
-      {hoveredTask && hoverPosition && (
-        <>
-          <line
-            x1={hoverPosition.x}
-            y1={hoverPosition.y}
-            x2={
-              hoverDirection === "right"
-                ? size + 10
-                : hoverDirection === "left"
-                ? -10
-                : hoverPosition.x
-            }
-            y2={
-              hoverDirection === "top"
-                ? -10
-                : hoverDirection === "bottom"
-                ? size + 10
-                : hoverPosition.y
-            }
-            stroke="white"
-            strokeWidth="0.5"
-          />
-          <rect
-            x={
-              hoverDirection === "right"
-                ? size + 20
-                : hoverDirection === "left"
-                ? hoverPosition.x - 140
-                : hoverPosition.x - 60
-            }
-            y={
-              hoverDirection === "top"
-                ? hoverPosition.y - 60
-                : hoverDirection === "bottom"
-                ? hoverPosition.y + 20
-                : hoverPosition.y - 20
-            }
-            width="120"
-            height="40"
-            fill="#222"
-            stroke="#888"
-            rx="12"
-            ry="12"
-          />
-          <text
-            x={
-              hoverDirection === "right"
-                ? size + 80
-                : hoverDirection === "left"
-                ? hoverPosition.x - 80
-                : hoverPosition.x
-            }
-            y={
-              hoverDirection === "top"
-                ? hoverPosition.y - 20
-                : hoverDirection === "bottom"
-                ? hoverPosition.y + 20
-                : hoverPosition.y
-            }
-            textAnchor="middle"
-            dominantBaseline="middle"
-            fill="#fff"
-            fontSize="12"
+      <AnimatePresence>
+        {hoveredTask && hoverPosition && (
+          <motion.g
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.8 }}
+            transition={{ duration: 0.2 }}
           >
-            {hoveredTask.text}
-          </text>
-        </>
-      )}
+            {(() => {
+              const rectWidth = 180;
+              const rectHeight = 60;
+
+              return (
+                <>
+                  <rect
+                    x={size / 2 - rectWidth / 2}
+                    y={size / 2 - rectHeight / 2}
+                    width={rectWidth}
+                    height={rectHeight}
+                    fill="#222"
+                    stroke="#888"
+                    rx="8"
+                    ry="8"
+                  />
+                  <text
+                    x={size / 2}
+                    y={size / 2 - rectHeight / 2 + 20}
+                    textAnchor="middle"
+                    dominantBaseline="middle"
+                    fill="#fff"
+                    fontSize="14"
+                  >
+                    {hoveredTask.text}
+                  </text>
+                  <text
+                    x={size / 2}
+                    y={size / 2 - rectHeight / 2 + 50}
+                    textAnchor="middle"
+                    dominantBaseline="middle"
+                    fill="#ccc"
+                    fontSize="12"
+                  >
+                    {`${formatTime(hoveredTask.startTime)} - ${formatTime(
+                      hoveredTask.endTime
+                    )}`}
+                  </text>
+                </>
+              );
+            })()}
+          </motion.g>
+        )}
+      </AnimatePresence>
     </svg>
   );
 };
