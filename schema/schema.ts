@@ -8,5 +8,5 @@ export const AddTaskFormSchema = z.object({
   endTime: z.string(),
   color: z.string().regex(/^#[0-9A-Fa-f]{6}$/, {
     message: "Invalid color format. Use #RRGGBB",
-  }),
+  }).optional(),
 });

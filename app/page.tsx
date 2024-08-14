@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { toast as sonner } from "sonner";
-import { AlarmClockPlus, Info, MoveUpRight } from "lucide-react";
+import { AlarmClockPlus, EyeOff, Info, MoveUpRight, Palette } from "lucide-react";
 import { AddTaskFormSchema } from "@/schema/schema";
 import { Task } from "@/types";
 import { get12HourTimeFrom24HourTime } from "@/lib/utils";
@@ -25,6 +25,7 @@ import Navbar from "@/components/navbar/navbar";
 export default function Home() {
   const [tasks, setTasks] = React.useState<Task[]>([]);
   const [isFormVisible, setIsFormVisible] = React.useState(false);
+  const [showColorInput, setShowColorInput] = React.useState(false);
 
   const form = useForm<z.infer<typeof AddTaskFormSchema>>({
     resolver: zodResolver(AddTaskFormSchema),
@@ -32,6 +33,7 @@ export default function Home() {
       task: "",
       startTime: "",
       endTime: "",
+      color: undefined,
     },
   });
 
@@ -66,11 +68,15 @@ export default function Home() {
       return new Date(new Date().setHours(hours, minutes, 0, 0));
     };
 
+    const generateRandomColor = () => {
+      return "#" + Math.floor(Math.random() * 16777215).toString(16);
+    };
+
     const newTask: Task = {
       text: data.task,
       startTime: parseTime(data.startTime),
       endTime: parseTime(data.endTime),
-      color: `${data.color}`,
+      color: data.color || generateRandomColor(),
     };
 
     setTasks([...tasks, newTask]);
@@ -176,24 +182,45 @@ export default function Home() {
                       )}
                     />
                   </div>
-                  <FormField
-                    control={form.control}
-                    name="color"
-                    render={({ field }) => (
-                      <FormItem className="w-full">
-                        <FormLabel className="text-white/80">Color</FormLabel>
-                        <FormControl>
-                          <Input
-                            required
-                            type="color"
-                            {...field}
-                            className="h-10 cursor-pointer bg-transparent border-white/20 rounded-md overflow-hidden"
-                          />
-                        </FormControl>
-                        <FormMessage className="text-red-300" />
-                      </FormItem>
+
+                  <Button
+                    type="button"
+                    variant="link"
+                    onClick={() => setShowColorInput(!showColorInput)}
+                    className="flex items-center gap-2 float-right text-white/80 hover:text-white transition-colors duration-200"
+                  >
+                    {showColorInput ? (
+                      <EyeOff size={20} className="text-white" />
+                    ) : (
+                      <Palette size={20} className="text-white" />
                     )}
-                  />
+                    {showColorInput
+                      ? "Hide Color Input"
+                      : "Assign Color"}
+                  </Button>
+
+                  {showColorInput && (
+                    <FormField
+                      control={form.control}
+                      name="color"
+                      render={({ field }) => (
+                        <FormItem className="w-full">
+                          <FormLabel className="text-white/80">
+                            Color (optional)
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              type="color"
+                              {...field}
+                              className="h-10 cursor-pointer bg-transparent border-white/20 rounded-md overflow-hidden"
+                            />
+                          </FormControl>
+                          <FormMessage className="text-red-300" />
+                        </FormItem>
+                      )}
+                    />
+                  )}
+
                   <Button
                     type="submit"
                     className="w-full bg-white/20 hover:bg-white/30 text-white transition-colors duration-200"
