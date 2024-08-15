@@ -2,14 +2,18 @@
 
 import * as React from "react";
 import { Separator } from "@/components/ui/separator";
+import { useTheme } from "next-themes";
 import {
   getMonthFromIndex,
   getDayFromIndex,
   getWeekdayFromIndex,
 } from "@/lib/utils";
+import { Moon, Sun } from "lucide-react";
 
 export default function Navbar() {
   const [currentTime, setCurrentTime] = React.useState(new Date());
+  const [mounted, setMounted] = React.useState(false);
+  const { resolvedTheme, setTheme } = useTheme();
 
   React.useEffect(() => {
     const timer = setInterval(() => {
@@ -24,25 +28,45 @@ export default function Navbar() {
   const month = currentTime.getMonth();
 
   const formattedTime = currentTime.toLocaleTimeString([], {
-    hour: '2-digit',
-    minute: '2-digit',
+    hour: "2-digit",
+    minute: "2-digit",
   });
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
 
   return (
     <div className="bg-transparent absolute top-0 left-0 right-0 flex items-center justify-between h-10 px-5 py-8">
       <div className="flex h-3.5 items-center gap-3">
-        <p className="text-lg text-white">
-          {formattedTime}
-        </p>
-        <Separator className="bg-[#ffffff1c]" orientation="vertical" />
-        <p className="text-[#ffffff80]">{new Date().getFullYear()}</p>
+        <p className="text-lg dark:text-white text-dark">{formattedTime}</p>
+        <Separator className="dark:bg-[#ffffff1c] bg-stone-200" orientation="vertical" />
+        <p className="dark:text-[#ffffff80] text-dark">{new Date().getFullYear()}</p>
       </div>
-      <div className="text-sm uppercase mr-40 text-[#ffffff80] flex gap-1.5">
+
+      <div className="text-sm uppercase mr-40 dark:text-[#ffffff80] text-dark flex gap-1.5">
         <p>{getWeekdayFromIndex(weekday)}</p>
-        <span className="text-white">{getDayFromIndex(day)}</span>{" "}
-        <span className="text-white">{getMonthFromIndex(month)}</span>
+        <span className="dark:text-white text-dark">{getDayFromIndex(day)}</span>{" "}
+        <span className="dark:text-white text-dark">{getMonthFromIndex(month)}</span>
       </div>
-      <div></div>
+
+      {mounted ? (
+        <button
+          aria-label="theme button"
+          className="rounded-lg p-2 duration-300"
+          onClick={() => {
+            setTheme(resolvedTheme === "dark" ? "light" : "dark");
+          }}
+          type="button"
+        >
+          {resolvedTheme === "dark" && (
+            <Sun aria-hidden="true" className="h-5 w-5" />
+          )}
+          {resolvedTheme === "light" && (
+            <Moon aria-hidden="true" className="h-5 w-5" />
+          )}
+        </button>
+      ) : null}
     </div>
   );
 }

@@ -21,7 +21,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
-        <ThemeProvider>{children}</ThemeProvider>
+        <ThemeProvider attribute="class" enableSystem>{children}</ThemeProvider>
         <SpeedInsights />
         <Toaster />
         <SonnerToaster richColors expand={false} position="top-right" />
