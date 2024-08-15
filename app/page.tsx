@@ -342,7 +342,7 @@ export default function Home() {
             Press and hold on a task to delete it.
           </p>
           <p className="flex gap-1 items-center text-xs text-white/80">
-            Made with ❤️ by{" "}
+            Built with ❤️ by{" "}
             <a
               className="underline"
               href="https://github.com/seths10"
