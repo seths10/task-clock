@@ -19,9 +19,9 @@ export default function Navbar() {
     return () => clearInterval(timer);
   }, []);
 
-  const weekday = new Date().getDay();
-  const day = new Date().getDay();
-  const month = new Date().getMonth();
+  const weekday = currentTime.getDay();
+  const day = currentTime.getDate() - 1;
+  const month = currentTime.getMonth();
 
   const formattedTime = currentTime.toLocaleTimeString([], {
     hour: '2-digit',

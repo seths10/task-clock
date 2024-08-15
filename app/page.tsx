@@ -243,6 +243,10 @@ export default function Home() {
         )}
       </div>
 
+      <div className="absolute bottom-auto">
+
+      </div>
+
       <div className="flex items-center gap-2 absolute bottom-5 left-5 overflow-hidden">
         <Info size={20} className="text-white" />
         <div className="flex flex-col gap-1">
