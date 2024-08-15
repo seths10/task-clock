@@ -15,10 +15,17 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { toast as sonner } from "sonner";
-import { AlarmClockPlus, EyeOff, Info, MoveUpRight, Palette } from "lucide-react";
+import {
+  AlarmClockPlus,
+  EyeOff,
+  Info,
+  MoveUpRight,
+  Palette,
+} from "lucide-react";
 import { AddTaskFormSchema } from "@/schema/schema";
 import { Task } from "@/types";
 import { get12HourTimeFrom24HourTime } from "@/lib/utils";
+import { Clock as ClockIcon, CheckCircle, MoreVertical } from "lucide-react";
 import Clock from "@/components/model/Clock";
 import Navbar from "@/components/navbar/navbar";
 
@@ -55,12 +62,28 @@ export default function Home() {
     }
   }, []);
 
+  const sortedTasks = [...tasks].sort(
+    (a, b) => a.startTime.getTime() - b.startTime.getTime()
+  );
+
   const onDeleteTask = (taskToDelete: Task) => {
     const updatedTasks = tasks.filter((task) => task !== taskToDelete);
     setTasks(updatedTasks);
     localStorage.setItem("tasks", JSON.stringify(updatedTasks));
     sonner(`Deleted task: '${taskToDelete.text}'`, { duration: 5000 });
   };
+
+  const totalTrackedTime = tasks.reduce((total, task) => {
+    return (
+      total + (task.endTime.getTime() - task.startTime.getTime()) / (1000 * 60)
+    );
+  }, 0);
+
+  function formatDuration(minutes: number) {
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    return `${hours}h ${mins}m`;
+  }
 
   function onSubmit(data: z.infer<typeof AddTaskFormSchema>) {
     const parseTime = (timeString: string) => {
@@ -194,9 +217,7 @@ export default function Home() {
                     ) : (
                       <Palette size={20} className="text-white" />
                     )}
-                    {showColorInput
-                      ? "Hide Color Input"
-                      : "Assign Color"}
+                    {showColorInput ? "Hide Color Input" : "Assign Color"}
                   </Button>
 
                   {showColorInput && (
@@ -243,8 +264,75 @@ export default function Home() {
         )}
       </div>
 
-      <div className="absolute bottom-auto">
+      <div className="absolute left-5 top-1/2 transform -translate-y-1/2 w-60">
+        {tasks.length > 0 && (
+          <h2 className="text-[#ffffff80] mb-2 text-sm tracking-wide font-light">
+            Timeline
+          </h2>
+        )}
+        <div className="space-y-3 relative max-h-[300px] overflow-y-auto">
+          {/* <div className="absolute left-[9px] top-1 bottom-1 w-0.5 bg-[#444]"></div> */}
+          {/* {sortedTasks.map((task, index) => (
+            <div key={index} className="flex items-start relative z-10">
+              <div className="flex flex-col items-center mr-4">
+                <div
+                  className={`w-5 h-5 bg-[#ffffff] rounded-full flex items-center justify-center ${task.color}`}
+                >
+                  <ClockIcon size={14} className="text-[#444]" />
+                </div>
+              </div>
+              <div>
+                <div className="flex items-center gap-1">
+                  <p className="text-white text-sm font-medium">
+                    {task.startTime.toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </p>
+                </div>
 
+                <p className="text-white/40 text-sm">{task.text}</p>
+              </div>
+            </div>
+          ))} */}
+
+          {sortedTasks.map((task, index) => {
+            const isTaskCompleted = new Date() > task.endTime;
+
+            return (
+              <div key={index} className="relative">
+                <div className="flex items-start relative z-10">
+                  <div className="flex flex-col items-center mr-4">
+                    <div
+                      className={`p-1 rounded-full bg-white flex items-center justify-center}`}
+                    >
+                      <ClockIcon size={14} className="text-[#444]" />
+                    </div>
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-1">
+                      <p className="text-white text-sm font-medium">
+                        {task.startTime.toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </p>
+                    </div>
+                    <p className="text-white/40 text-sm">{task.text}</p>
+                  </div>
+                </div>
+
+                <div
+                  className={`absolute left-[9px] top-1 bottom-0 w-0.5 ${
+                    isTaskCompleted
+                      ? "bg-[#444]"
+                      : "border-dashed border-[#ff5722]"
+                  }`}
+                ></div>
+              </div>
+            );
+          })}
+        </div>
       </div>
 
       <div className="flex items-center gap-2 absolute bottom-5 left-5 overflow-hidden">
