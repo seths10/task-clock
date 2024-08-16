@@ -43,8 +43,8 @@ const Clock: React.FC<ClockProps> = ({ tasks, size, onDeleteTask }) => {
     }, 3000);
   };
 
-  const isDarkMode = localStorage.getItem("theme") === "dark";
-
+  const isDarkMode = typeof window !== "undefined" && localStorage.getItem("theme") === "dark";
+  
   const handleMouseUp = () => {
     if (pressTimeoutRef.current) {
       clearTimeout(pressTimeoutRef.current);
@@ -54,7 +54,7 @@ const Clock: React.FC<ClockProps> = ({ tasks, size, onDeleteTask }) => {
     }
   };
 
-  const getAngle = (time: Date) => {
+  const getAngle = (time: Date): number => {
     const hours = time.getHours();
     const minutes = time.getMinutes();
     return ((hours + minutes / 60) / 24) * 360;

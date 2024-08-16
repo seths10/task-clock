@@ -48,19 +48,21 @@ export default function Home() {
   });
 
   React.useEffect(() => {
-    const storedTasks = localStorage.getItem("tasks");
-    if (storedTasks) {
-      try {
-        const parsedTasks = JSON.parse(storedTasks);
-        const validatedTasks = parsedTasks.map((task: any) => ({
-          ...task,
-          startTime: new Date(task.startTime),
-          endTime: new Date(task.endTime),
-        }));
+    if (typeof window !== "undefined") {
+      const storedTasks = localStorage.getItem("tasks");
+      if (storedTasks) {
+        try {
+          const parsedTasks = JSON.parse(storedTasks);
+          const validatedTasks = parsedTasks.map((task: any) => ({
+            ...task,
+            startTime: new Date(task.startTime),
+            endTime: new Date(task.endTime),
+          }));
 
-        setTasks(validatedTasks);
-      } catch (error) {
-        sonner.error("Failed to parse tasks from local storage");
+          setTasks(validatedTasks);
+        } catch (error) {
+          sonner.error("Failed to parse tasks from local storage");
+        }
       }
     }
   }, []);
