@@ -43,6 +43,8 @@ const Clock: React.FC<ClockProps> = ({ tasks, size, onDeleteTask }) => {
     }, 3000);
   };
 
+  const isDarkMode = localStorage.getItem("theme") === "dark";
+
   const handleMouseUp = () => {
     if (pressTimeoutRef.current) {
       clearTimeout(pressTimeoutRef.current);
@@ -84,7 +86,7 @@ const Clock: React.FC<ClockProps> = ({ tasks, size, onDeleteTask }) => {
         strokeWidth={2}
         strokeLinejoin="round"
         r={size / 2 - 30}
-        fill="#1a1a1a"
+        fill={isDarkMode ? "#1a1a1a" : "#ffffff80"}
       />
 
       {[...Array(24)].map((_, i) => {
@@ -105,7 +107,7 @@ const Clock: React.FC<ClockProps> = ({ tasks, size, onDeleteTask }) => {
               y1={size / 2}
               x2={lineEnd.x}
               y2={lineEnd.y}
-              stroke="#888888"
+              stroke={isDarkMode ? "#888888" : "#000000"}
               strokeWidth="0.05"
               strokeDasharray="5"
             />
@@ -115,7 +117,15 @@ const Clock: React.FC<ClockProps> = ({ tasks, size, onDeleteTask }) => {
               y={y}
               textAnchor="middle"
               dominantBaseline="middle"
-              fill={isMainHour ? "#ffffff" : "#888888"}
+              fill={
+                isMainHour
+                  ? isDarkMode
+                    ? "#ffffff"
+                    : "#000000"
+                  : !isDarkMode
+                  ? "#000"
+                  : "#888"
+              }
               fontSize={isMainHour ? 14 : 10}
             >
               {`${hour}${ampm}`}
@@ -196,7 +206,7 @@ const Clock: React.FC<ClockProps> = ({ tasks, size, onDeleteTask }) => {
                     <>
                       <circle
                         cx={start.x - 75}
-                        cy={start.y }
+                        cy={start.y}
                         r="25"
                         stroke="white"
                         strokeWidth="4"

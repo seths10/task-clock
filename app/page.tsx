@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
+import { Button as MovingBorderButton } from "@/components/ui/moving-border";
 import {
   Form,
   FormControl,
@@ -17,6 +18,7 @@ import { Input } from "@/components/ui/input";
 import { toast as sonner } from "sonner";
 import {
   AlarmClockPlus,
+  Binary,
   EyeOff,
   Info,
   MoveUpRight,
@@ -25,7 +27,8 @@ import {
 import { AddTaskFormSchema } from "@/schema/schema";
 import { Task } from "@/types";
 import { get12HourTimeFrom24HourTime } from "@/lib/utils";
-import { Clock as ClockIcon, CheckCircle, MoreVertical } from "lucide-react";
+import { Clock as ClockIcon } from "lucide-react";
+import { TextEffect } from "@/components/ui/text-effect";
 import Clock from "@/components/model/Clock";
 import Navbar from "@/components/navbar/navbar";
 
@@ -73,18 +76,6 @@ export default function Home() {
     sonner(`Deleted task: '${taskToDelete.text}'`, { duration: 5000 });
   };
 
-  const totalTrackedTime = tasks.reduce((total, task) => {
-    return (
-      total + (task.endTime.getTime() - task.startTime.getTime()) / (1000 * 60)
-    );
-  }, 0);
-
-  function formatDuration(minutes: number) {
-    const hours = Math.floor(minutes / 60);
-    const mins = minutes % 60;
-    return `${hours}h ${mins}m`;
-  }
-
   function onSubmit(data: z.infer<typeof AddTaskFormSchema>) {
     const parseTime = (timeString: string) => {
       const [hours, minutes] = timeString.split(":").map(Number);
@@ -116,7 +107,7 @@ export default function Home() {
   }
 
   return (
-    <div className="w-screen h-screen bg-[#151515] relative overflow-hidden">
+    <div className="absolute top-0 z-[-2] h-screen w-screen bg-[#e6e5e5] dark:bg-[#000000] dark:bg-[radial-gradient(#ffffff33_0.5px,#09090b_1px)] dark:bg-[size:30px_30px]">
       <Navbar />
       <div className="flex justify-center items-center pt-[5rem] w-full h-full">
         <Clock tasks={tasks} size={600} onDeleteTask={onDeleteTask} />
@@ -131,8 +122,8 @@ export default function Home() {
           }`}
         >
           {isFormVisible && (
-            <div className="p-6 w-[24rem] rounded-2xl backdrop-blur-md bg-white/10 shadow-lg">
-              <div className="text-white/80 hover:text-white cursor-pointer transition-colors duration-200">
+            <div className="p-6 dark:border-none border border-slate-200 w-[24rem] rounded-2xl backdrop-blur-md dark:bg-black/10 bg-white/10 shadow-lg">
+              <div className="dark:text-white/80 text-dark hover:dark:text-white text-dark cursor-pointer transition-colors duration-200">
                 <p
                   onClick={() => setIsFormVisible(!isFormVisible)}
                   className="underline text-right text-xs"
@@ -150,10 +141,12 @@ export default function Home() {
                     name="task"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-white/80">Task</FormLabel>
+                        <FormLabel className="dark:text-white/80 text-dark">
+                          Task
+                        </FormLabel>
                         <FormControl>
                           <Input
-                            className="w-full bg-white/10 border-white/20 text-white placeholder-white/50 focus:border-white/50 transition-colors duration-200"
+                            className="w-full bg-white/10 dark:border-white/20 border-dark dark:text-white text-dark placeholder-white/50 focus:border-white/50 transition-colors duration-200"
                             required
                             placeholder="Enter a new task"
                             {...field}
@@ -169,14 +162,14 @@ export default function Home() {
                       name="startTime"
                       render={({ field }) => (
                         <FormItem className="w-1/2">
-                          <FormLabel className="text-white/80">
+                          <FormLabel className="dark:text-white/80 text-dark">
                             Start Time
                           </FormLabel>
                           <FormControl>
                             <Input
                               required
                               type="time"
-                              className="bg-white/10 border-white/20 text-white focus:border-white/50 transition-colors duration-200"
+                              className="bg-white/10 dark:border-white/20 border-dark dark:text-white text-dark focus:border-white/50 transition-colors duration-200"
                               {...field}
                             />
                           </FormControl>
@@ -189,14 +182,14 @@ export default function Home() {
                       name="endTime"
                       render={({ field }) => (
                         <FormItem className="w-1/2">
-                          <FormLabel className="text-white/80">
+                          <FormLabel className="dark:text-white/80 text-dark">
                             End Time
                           </FormLabel>
                           <FormControl>
                             <Input
                               required
                               type="time"
-                              className="bg-white/10 border-white/20 text-white focus:border-white/50 transition-colors duration-200"
+                              className="bg-white/10 dark:border-white/20 border-dark dark:text-white text-dark focus:border-white/50 transition-colors duration-200"
                               {...field}
                             />
                           </FormControl>
@@ -210,12 +203,15 @@ export default function Home() {
                     type="button"
                     variant="link"
                     onClick={() => setShowColorInput(!showColorInput)}
-                    className="flex items-center gap-2 float-right text-white/80 hover:text-white transition-colors duration-200"
+                    className="flex items-center gap-2 float-right dark:text-white/80 text-dark hover:dark:text-white text-dark transition-colors duration-200"
                   >
                     {showColorInput ? (
-                      <EyeOff size={20} className="text-white" />
+                      <EyeOff size={20} className="dark:text-white text-dark" />
                     ) : (
-                      <Palette size={20} className="text-white" />
+                      <Palette
+                        size={20}
+                        className="dark:text-white text-dark"
+                      />
                     )}
                     {showColorInput ? "Hide Color Input" : "Assign Color"}
                   </Button>
@@ -226,14 +222,14 @@ export default function Home() {
                       name="color"
                       render={({ field }) => (
                         <FormItem className="w-full">
-                          <FormLabel className="text-white/80">
+                          <FormLabel className="dark:text-white/80 text-dark">
                             Color (optional)
                           </FormLabel>
                           <FormControl>
                             <Input
                               type="color"
                               {...field}
-                              className="h-10 cursor-pointer bg-transparent border-white/20 rounded-md overflow-hidden"
+                              className="h-10 cursor-pointer bg-transparent dark:border-white/20 border-dark rounded-md overflow-hidden"
                             />
                           </FormControl>
                           <FormMessage className="text-red-300" />
@@ -244,7 +240,7 @@ export default function Home() {
 
                   <Button
                     type="submit"
-                    className="w-full bg-white/20 hover:bg-white/30 text-white transition-colors duration-200"
+                    className="w-full dark:bg-white/20 bg-gray-200 hover:bg-gray-300 hover:dark:bg-white/80 dark:text-white text-dark transition-colors duration-200"
                   >
                     Add Task
                   </Button>
@@ -255,77 +251,58 @@ export default function Home() {
         </div>
 
         {!isFormVisible && (
-          <Button
-            className="flex z-[100] py-6 shadow-lg rounded-3xl float-right justify-center items-center bg-white/10 hover:bg-white/20 text-white transition-colors duration-200"
+          <MovingBorderButton
+            borderRadius="2rem"
             onClick={() => setIsFormVisible(!isFormVisible)}
+            className="flex z-[100] bg-white/10 hover:bg-white/20 dark:bg-transparent dark:text-white text-dark transition-colors duration-200"
           >
             <AlarmClockPlus size={20} />
-          </Button>
+          </MovingBorderButton>
         )}
       </div>
 
       <div className="absolute left-5 top-1/2 transform -translate-y-1/2 w-60">
         {tasks.length > 0 && (
-          <h2 className="text-[#ffffff80] mb-2 text-sm tracking-wide font-light">
+          <h2 className="dark:text-[#ffffff80] text-dark mb-2 text-sm tracking-wide font-light">
             Timeline
           </h2>
         )}
         <div className="space-y-3 relative max-h-[300px] overflow-y-auto">
-          {/* <div className="absolute left-[9px] top-1 bottom-1 w-0.5 bg-[#444]"></div> */}
-          {/* {sortedTasks.map((task, index) => (
-            <div key={index} className="flex items-start relative z-10">
-              <div className="flex flex-col items-center mr-4">
-                <div
-                  className={`w-5 h-5 bg-[#ffffff] rounded-full flex items-center justify-center ${task.color}`}
-                >
-                  <ClockIcon size={14} className="text-[#444]" />
-                </div>
-              </div>
-              <div>
-                <div className="flex items-center gap-1">
-                  <p className="text-white text-sm font-medium">
-                    {task.startTime.toLocaleTimeString([], {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </p>
-                </div>
-
-                <p className="text-white/40 text-sm">{task.text}</p>
-              </div>
-            </div>
-          ))} */}
-
           {sortedTasks.map((task, index) => {
             const isTaskCompleted = new Date() > task.endTime;
 
             return (
               <div key={index} className="relative">
                 <div className="flex items-start relative z-10">
-                  <div className="flex flex-col items-center mr-4">
+                  <div className="flex flex-col items-center mr-2">
                     <div
-                      className={`p-1 rounded-full bg-white flex items-center justify-center}`}
+                      className={`p-1 rounded-full  flex items-center justify-center}`}
                     >
-                      <ClockIcon size={14} className="text-[#444]" />
+                      <ClockIcon
+                        size={14}
+                        className="dark:text-[#fff] text-dark"
+                      />
                     </div>
                   </div>
                   <div>
                     <div className="flex items-center gap-1">
-                      <p className="text-white text-sm font-medium">
+                      <p className="dark:text-white text-dark text-sm font-medium">
                         {task.startTime.toLocaleTimeString([], {
                           hour: "2-digit",
                           minute: "2-digit",
                         })}
                       </p>
                     </div>
-                    <p className="text-white/40 text-sm">{task.text}</p>
+                    <p className="dark:text-white/40 text-dark text-sm">
+                      {task.text}
+                    </p>
                   </div>
                 </div>
 
                 <div
-                  className={`absolute left-[9px] top-1 bottom-0 w-0.5 ${
+                  className={`absolute left-[9px] top-1 bottom-0 w-[0.05rem] ${
                     isTaskCompleted
-                      ? "bg-[#444]"
+                      ? "bg-teal-00"
                       : "border-dashed border-[#ff5722]"
                   }`}
                 ></div>
@@ -336,25 +313,45 @@ export default function Home() {
       </div>
 
       <div className="flex items-center gap-2 absolute bottom-5 left-5 overflow-hidden">
-        <Info size={20} className="text-white" />
+        <Info size={20} className="dark:text-white text-dark" />
         <div className="flex flex-col gap-1">
-          <p className="text-xs text-white/80 flex items-center">
+          <TextEffect
+            per="word"
+            className="text-xs dark:text-white/80 text-dark flex items-center"
+            as="h3"
+            preset="slide"
+          >
             Press and hold on a task to delete it.
-          </p>
-          <p className="flex gap-1 items-center text-xs text-white/80">
-            Built with ❤️ by{" "}
-            <a
-              className="underline"
-              href="https://github.com/seths10"
-              target="_blank"
-              rel="noreferrer"
+          </TextEffect>
+          <div className="flex gap-1 items-center text-xs">
+            <TextEffect
+              per="word"
+              className="text-xs dark:text-white/80 text-dark flex items-center"
+              as="h3"
+              preset="slide"
             >
-              Seth Addo
-            </a>
-            <span>
-              {<MoveUpRight size={14} className="text-white underline" />}
-            </span>
-          </p>
+              Built with
+            </TextEffect>
+            <Binary className="inline-block h-5 w-5 text-[#31bdc6]" />
+            <p className="flex gap-1 items-center text-xs dark:text-white/80 text-dark">
+              <a
+                className="underline"
+                href="https://github.com/seths10"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Seth Addo
+              </a>
+              <span>
+                {
+                  <MoveUpRight
+                    size={14}
+                    className="dark:text-white text-dark underline"
+                  />
+                }
+              </span>
+            </p>
+          </div>
         </div>
       </div>
     </div>
