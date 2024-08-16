@@ -43,8 +43,9 @@ const Clock: React.FC<ClockProps> = ({ tasks, size, onDeleteTask }) => {
     }, 3000);
   };
 
-  const isDarkMode = typeof window !== "undefined" && localStorage.getItem("theme") === "dark";
-  
+  const isDarkMode =
+    typeof window !== "undefined" && localStorage.getItem("theme") === "dark";
+
   const handleMouseUp = () => {
     if (pressTimeoutRef.current) {
       clearTimeout(pressTimeoutRef.current);
@@ -208,7 +209,7 @@ const Clock: React.FC<ClockProps> = ({ tasks, size, onDeleteTask }) => {
                         cx={start.x - 75}
                         cy={start.y}
                         r="25"
-                        stroke="white"
+                        stroke={isDarkMode ? "#fff" : "#000"}
                         strokeWidth="4"
                         fill="none"
                         strokeDasharray={Math.PI * 50}
@@ -221,7 +222,7 @@ const Clock: React.FC<ClockProps> = ({ tasks, size, onDeleteTask }) => {
                         y={start.y}
                         textAnchor="middle"
                         dominantBaseline="middle"
-                        fill="white"
+                        fill={isDarkMode ? "#fff" : "#000"}
                         fontSize="10"
                       >
                         Deleting
@@ -244,8 +245,8 @@ const Clock: React.FC<ClockProps> = ({ tasks, size, onDeleteTask }) => {
                     y={size / 2 - rectHeight / 2}
                     width={rectWidth}
                     height={rectHeight}
-                    fill="#222"
-                    stroke="#444"
+                    fill={isDarkMode ? "#222" : "#222223"}
+                    stroke={isDarkMode ? "#444" : "transparent"}
                     strokeWidth="1"
                     rx="10"
                     ry="10"

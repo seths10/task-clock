@@ -124,7 +124,7 @@ export default function Home() {
           }`}
         >
           {isFormVisible && (
-            <div className="p-6 dark:border-none border border-slate-200 w-[24rem] rounded-2xl backdrop-blur-md dark:bg-black/10 bg-white/10 shadow-lg">
+            <div className="px-4 py-4 dark:border-none border border-slate-200 w-[24rem] rounded-2xl backdrop-blur-md dark:bg-black/10 bg-white/10 shadow-lg">
               <div className="dark:text-white/80 text-dark hover:dark:text-white text-dark cursor-pointer transition-colors duration-200">
                 <p
                   onClick={() => setIsFormVisible(!isFormVisible)}
@@ -148,7 +148,7 @@ export default function Home() {
                         </FormLabel>
                         <FormControl>
                           <Input
-                            className="w-full bg-white/10 dark:border-white/20 border-dark dark:text-white text-dark placeholder-white/50 focus:border-white/50 transition-colors duration-200"
+                            className="w-full bg-white/10 dark:border-white/20 border-black/30 dark:text-white text-dark placeholder-white/50 focus:border-white/50 transition-colors duration-200"
                             required
                             placeholder="Enter a new task"
                             {...field}
@@ -171,7 +171,7 @@ export default function Home() {
                             <Input
                               required
                               type="time"
-                              className="bg-white/10 dark:border-white/20 border-dark dark:text-white text-dark focus:border-white/50 transition-colors duration-200"
+                              className="bg-white/10 dark:border-white/20 border-black/30 dark:text-white text-dark focus:border-white/50 transition-colors duration-200"
                               {...field}
                             />
                           </FormControl>
@@ -191,7 +191,7 @@ export default function Home() {
                             <Input
                               required
                               type="time"
-                              className="bg-white/10 dark:border-white/20 border-dark dark:text-white text-dark focus:border-white/50 transition-colors duration-200"
+                              className="bg-white/10 dark:border-white/20 border-black/30 dark:text-white text-dark focus:border-white/50 transition-colors duration-200"
                               {...field}
                             />
                           </FormControl>
@@ -231,7 +231,7 @@ export default function Home() {
                             <Input
                               type="color"
                               {...field}
-                              className="h-10 cursor-pointer bg-transparent dark:border-white/20 border-dark rounded-md overflow-hidden"
+                              className="h-10 cursor-pointer bg-transparent dark:border-white/20 border-black/30 rounded-md overflow-hidden"
                             />
                           </FormControl>
                           <FormMessage className="text-red-300" />
@@ -242,7 +242,7 @@ export default function Home() {
 
                   <Button
                     type="submit"
-                    className="w-full dark:bg-white/20 bg-gray-200 hover:bg-gray-300 hover:dark:bg-white/80 dark:text-white text-dark transition-colors duration-200"
+                    className="w-full dark:bg-white/20 bg-gray-200 border border-black/10 hover:bg-gray-300 hover:dark:bg-white/80 dark:text-white text-dark transition-colors duration-200"
                   >
                     Add Task
                   </Button>
