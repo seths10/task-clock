@@ -1,8 +1,24 @@
-import { SignInButton, SignedIn, SignedOut } from "@clerk/nextjs";
+"use client";
+
+import * as React from "react";
+import { SignInButton, useAuth, SignedOut } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
 
 export default function Home() {
+  const { userId, isLoaded } = useAuth();
+  const router = useRouter();
+
+  React.useEffect(() => {
+    if (isLoaded && userId) {
+      router.push("/home");
+    }
+  }, [isLoaded, userId, router]);
+
+  if (!isLoaded || userId) {
+    return null;
+  }
+
   return (
     <div className="flex absolute inset-0 -z-10 h-screen items-center justify-center w-full bg-white bg-[linear-gradient(to_right,#f0f0f0_1px,transparent_1px),linear-gradient(to_bottom,#f0f0f0_1px,transparent_1px)] bg-[size:6rem_4rem]">
       <div className="lg:p-8">
@@ -15,16 +31,6 @@ export default function Home() {
               Start clocking your tasks by logging in below.
             </p>
           </div>
-          <SignedIn>
-            <Link href="/home">
-              <Button
-                variant="outline"
-                className="fancy-border-gradient hover:bg-background relative mx-auto flex gap-4 border-none"
-              >
-                Clock Tasks
-              </Button>
-            </Link>
-          </SignedIn>
           <SignedOut>
             <SignInButton>
               <Button

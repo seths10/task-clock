@@ -55,7 +55,7 @@ export default function RootLayout({
           <ThemeProvider attribute="class">{children}</ThemeProvider>
           <SpeedInsights />
           <Toaster />
-          <SonnerToaster richColors position="top-right" />
+          <SonnerToaster richColors closeButton position="top-right" />
         </body>
       </ClerkProvider>
     </html>
