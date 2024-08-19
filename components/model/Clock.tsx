@@ -260,7 +260,7 @@ const Clock: React.FC<ClockProps> = ({ tasks, size, onDeleteTask }) => {
                     fill="#fff"
                     fontSize="16"
                   >
-                    {hoveredTask.text}
+                    {hoveredTask.task}
                   </text>
 
                   <rect

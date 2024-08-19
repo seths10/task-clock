@@ -75,7 +75,7 @@ export default function HomeClient() {
     const updatedTasks = tasks.filter((task) => task !== taskToDelete);
     setTasks(updatedTasks);
     localStorage.setItem("tasks", JSON.stringify(updatedTasks));
-    sonner(`Deleted task: '${taskToDelete.text}'`, { duration: 5000 });
+    sonner(`Deleted task: '${taskToDelete.task}'`, { duration: 5000 });
   };
 
   function onSubmit(data: z.infer<typeof AddTaskFormSchema>) {
@@ -89,7 +89,7 @@ export default function HomeClient() {
     };
 
     const newTask: Task = {
-      text: data.task,
+      task: data.task,
       startTime: parseTime(data.startTime),
       endTime: parseTime(data.endTime),
       color: data.color || generateRandomColor(),
@@ -296,7 +296,7 @@ export default function HomeClient() {
                       </p>
                     </div>
                     <p className="dark:text-white/40 text-dark text-sm">
-                      {task.text}
+                      {task.task}
                     </p>
                   </div>
                 </div>

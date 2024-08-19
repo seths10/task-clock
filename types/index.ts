@@ -1,5 +1,6 @@
 export type Task = {
-  text: string;
+  id?: number;
+  task: string;
   startTime: Date;
   endTime: Date;
   color: string;
