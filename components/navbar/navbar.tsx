@@ -9,7 +9,6 @@ import {
   getWeekdayFromIndex,
 } from "@/lib/utils";
 import { Moon, Sun } from "lucide-react";
-import { UserButton } from "@clerk/nextjs";
 
 export default function Navbar() {
   const [currentTime, setCurrentTime] = React.useState(new Date());
@@ -78,14 +77,6 @@ export default function Navbar() {
             )}
           </button>
         ) : null}
-        <div aria-hidden className="w-px h-3 mr-2 dark:bg-[#c7c7c8d0] bg-[#c7c7c8]" />
-        <UserButton
-          appearance={{
-            elements: {
-              userButtonAvatarBox: "size-6",
-            },
-          }}
-        />
       </div>
     </div>
   );
