@@ -13,7 +13,8 @@ _Welcome hackers! It is **awesome** to have you here! Before you start contribut
 
 > [!IMPORTANT]
 >
-> If you are resolving a `specific issue`, please mention the issue number in your PR description (e.g. `Fixes #123`)
-> Tips: Make sure that you are submitting and committing things that are of quality substance, otherwise I will reject your PR.
+> - Add screenshots (if possible)
+> - If you are resolving a `specific issue`, please mention the issue number in your PR description (e.g. `Fixes #123`)
+> - Make sure that you are submitting and committing things that are of quality substance, otherwise I will reject your PR.
 
 * Pat yourself on the back and wait for your `pull request (PR)` to be reviewed and merged.
