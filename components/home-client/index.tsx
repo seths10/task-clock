@@ -22,6 +22,7 @@ import {
   EyeOff,
   Info,
   MoveUpRight,
+  ArrowRight,
   Palette,
 } from "lucide-react";
 import { AddTaskFormSchema } from "@/schema/schema";
@@ -244,7 +245,9 @@ export default function HomeClient() {
                     type="submit"
                     className="w-full dark:bg-white/20 bg-gray-200 border border-black/10 hover:bg-gray-300 hover:dark:bg-white/80 dark:text-white text-dark transition-colors duration-200"
                   >
+
                     Add Task
+                    <div> <ArrowRight className="ml-1" size={20} /> </div>
                   </Button>
                 </form>
               </Form>
